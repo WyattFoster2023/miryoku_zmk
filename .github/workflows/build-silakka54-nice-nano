@@ -1,0 +1,9 @@
+name: 'Build Personal Silakka54 nice_nano_v2'
+on: workflow_dispatch
+jobs:
+  build:
+    uses: ./.github/workflows/main.yml
+    secrets: inherit
+    with:
+      board: '["nice_nano_v2"]'
+      shield: '["lily58_left","lily58_right", "settings_reset"]'
