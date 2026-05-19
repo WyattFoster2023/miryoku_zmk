@@ -21,4 +21,3 @@
 
 board: [ "nice_nano" ]
 shield: [ "lily58_left", "lily58_right", "settings_reset" ]
-alphas: [ "QWERTY" ]
