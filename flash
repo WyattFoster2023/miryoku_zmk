@@ -1,0 +1,248 @@
+#!/usr/bin/env bash
+# Interactive UF2 flasher for Nice!Nano (and similar UF2 bootloaders).
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
+FIRMWARE_DIR="$REPO_ROOT/firmware"
+CACHE_DIR="$FIRMWARE_DIR/.extracted"
+MEDIA_ROOT="/run/media/${USER}"
+
+ALL_MOUNTS=false
+DEVICE=""
+ZIP=""
+UF2=""
+
+BOOTLOADER_PATTERN='^(NICENANO|FTHR840BOOT|NRF52BOOT|NICEKEYBOARDS|ADAFRUIT|UF2BOOT)'
+
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Flash a .uf2 firmware file to a keyboard in UF2 bootloader mode.
+
+Options:
+  --all-mounts     Show every mount under $MEDIA_ROOT (default: bootloader volumes only)
+  --device PATH    Skip mount selection (must be under $MEDIA_ROOT)
+  --zip PATH       Skip zip selection
+  --uf2 PATH       Skip .uf2 selection (requires --zip or existing extract cache)
+  -h, --help       Show this help
+
+Workflow:
+  1. Double-tap reset so the board appears as a USB drive (e.g. NICENANO).
+  2. Place GitHub Actions artifact zips in firmware/
+  3. Run ./flash from the repository root
+EOF
+}
+
+die() {
+  echo "flash: $*" >&2
+  exit 1
+}
+
+need_cmd() {
+  command -v "$1" >/dev/null 2>&1 || die "missing required command: $1"
+}
+
+parse_args() {
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --all-mounts) ALL_MOUNTS=true; shift ;;
+      --device) DEVICE="${2:?--device requires a path}"; shift 2 ;;
+      --zip) ZIP="${2:?--zip requires a path}"; shift 2 ;;
+      --uf2) UF2="${2:?--uf2 requires a path}"; shift 2 ;;
+      -h | --help) usage; exit 0 ;;
+      *) die "unknown option: $1 (try --help)" ;;
+    esac
+  done
+}
+
+validate_mount() {
+  local mount="$1"
+  local real_mount real_root
+
+  [[ -d "$mount" ]] || die "mount is not a directory: $mount"
+  real_mount="$(realpath "$mount")"
+  real_root="$(realpath "$MEDIA_ROOT" 2>/dev/null)" || die "media root does not exist: $MEDIA_ROOT"
+
+  [[ "$real_mount" == "$real_root" || "$real_mount" == "$real_root"/* ]] \
+    || die "mount must be under $MEDIA_ROOT: $mount"
+
+  [[ -w "$mount" ]] || die "mount is not writable: $mount"
+  DEVICE="$real_mount"
+}
+
+list_mounts() {
+  local name path
+
+  [[ -d "$MEDIA_ROOT" ]] || return 0
+
+  shopt -s nocasematch
+  for path in "$MEDIA_ROOT"/*; do
+    [[ -d "$path" ]] || continue
+    name="$(basename "$path")"
+    if $ALL_MOUNTS; then
+      printf '%s\n' "$path"
+    elif [[ "$name" =~ $BOOTLOADER_PATTERN ]]; then
+      printf '%s\n' "$path"
+    fi
+  done
+  shopt -u nocasematch
+}
+
+pick_mount() {
+  local mounts choice
+
+  if [[ -n "$DEVICE" ]]; then
+    validate_mount "$DEVICE"
+    return
+  fi
+
+  mounts="$(list_mounts | sort -u)"
+  if [[ -z "$mounts" ]]; then
+    echo "flash: no bootloader mounts found under $MEDIA_ROOT" >&2
+    echo "flash: double-tap reset so NICENANO (or similar) appears, then retry." >&2
+    echo "flash: use --all-mounts to list every mounted volume." >&2
+    exit 1
+  fi
+
+  choice="$(
+    printf '%s\n' "$mounts" | fzf \
+      --prompt 'Mount (bootloader)> ' \
+      --header "Volumes under $MEDIA_ROOT" \
+      --height=40% \
+      --reverse
+  )" || die "mount selection cancelled"
+
+  validate_mount "$choice"
+}
+
+pick_zip() {
+  local zips choice
+
+  if [[ -n "$ZIP" ]]; then
+    [[ -f "$ZIP" ]] || die "zip not found: $ZIP"
+    return
+  fi
+
+  shopt -s nullglob
+  zips=("$FIRMWARE_DIR"/*.zip)
+  shopt -u nullglob
+
+  if [[ ${#zips[@]} -eq 0 ]]; then
+    die "no zip files in $FIRMWARE_DIR — save a GitHub Actions artifact zip there"
+  fi
+
+  choice="$(
+    printf '%s\n' "${zips[@]}" | sort | fzf \
+      --prompt 'Firmware zip> ' \
+      --preview 'unzip -l {} 2>/dev/null | head -30' \
+      --height=40% \
+      --reverse
+  )" || die "zip selection cancelled"
+
+  ZIP="$choice"
+}
+
+extract_zip() {
+  local zip_base cache_dir
+
+  zip_base="$(basename "$ZIP" .zip)"
+  cache_dir="$CACHE_DIR/$zip_base"
+
+  if [[ -d "$cache_dir" ]] && [[ "$ZIP" -ot "$cache_dir" ]]; then
+    : # cache is up to date
+  else
+    mkdir -p "$cache_dir"
+    unzip -o -q "$ZIP" -d "$cache_dir"
+  fi
+
+  EXTRACT_DIR="$cache_dir"
+}
+
+pick_uf2() {
+  local uf2s choice rel
+
+  if [[ -n "$UF2" ]]; then
+    [[ -f "$UF2" ]] || die "uf2 not found: $UF2"
+    UF2="$(realpath "$UF2")"
+    return
+  fi
+
+  [[ -n "${EXTRACT_DIR:-}" ]] || die "internal error: extract dir not set"
+
+  mapfile -t uf2s < <(find "$EXTRACT_DIR" -name '*.uf2' -type f | sort)
+  if [[ ${#uf2s[@]} -eq 0 ]]; then
+    die "no .uf2 files in $EXTRACT_DIR (check zip contents)"
+  fi
+
+  if [[ ${#uf2s[@]} -eq 1 ]]; then
+    UF2="$(realpath "${uf2s[0]}")"
+    echo "flash: only one .uf2 found: $(basename "$UF2")"
+    return
+  fi
+
+  choice="$(
+    for f in "${uf2s[@]}"; do
+      rel="${f#"$EXTRACT_DIR"/}"
+      printf '%s\t%s\n' "$rel" "$f"
+    done | fzf \
+      --prompt 'UF2 file> ' \
+      --with-nth=1 \
+      --delimiter=$'\t' \
+      --preview 'ls -lh {2}' \
+      --height=40% \
+      --reverse \
+      | cut -f2
+  )" || die "uf2 selection cancelled"
+
+  UF2="$(realpath "$choice")"
+}
+
+confirm_flash() {
+  local answer
+
+  echo
+  echo "  Mount:  $DEVICE"
+  echo "  UF2:    $UF2"
+  echo
+  read -r -p "Copy firmware to device? [y/N] " answer
+  [[ "$answer" =~ ^[Yy]$ ]] || die "flash cancelled"
+}
+
+flash_uf2() {
+  cp -- "$UF2" "$DEVICE/"
+  sync "$DEVICE" 2>/dev/null || sync
+  echo "flash: copied $(basename "$UF2") to $(basename "$DEVICE")"
+  echo "flash: the volume should unmount and the board should reboot."
+}
+
+split_reminder() {
+  local base
+
+  base="$(basename "$UF2")"
+  if [[ "$base" == *left* || "$ZIP" == *left* ]]; then
+    echo "flash: split keyboard — flash the right half with the matching *_right* build when ready."
+  elif [[ "$base" == *right* || "$ZIP" == *right* ]]; then
+    echo "flash: split keyboard — flash the left half with the matching *_left* build when ready."
+  fi
+}
+
+main() {
+  parse_args "$@"
+
+  need_cmd fzf
+  need_cmd unzip
+  need_cmd cp
+  need_cmd find
+  need_cmd realpath
+
+  pick_mount
+  pick_zip
+  extract_zip
+  pick_uf2
+  confirm_flash
+  flash_uf2
+  split_reminder
+}
+
+main "$@"
