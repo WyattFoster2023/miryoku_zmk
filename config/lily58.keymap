@@ -2,5 +2,10 @@
 // https://github.com/manna-harbour/miryoku
 
 #include "../miryoku/custom_config.h"
+
+#if defined(MIRYOKU_MULTI_LAYOUT)
+#include "../miryoku/multi_layout/layer_list.h"
+#endif
+
 #include "../miryoku/mapping/58/lily58.h"
 #include "../miryoku/miryoku.dtsi"

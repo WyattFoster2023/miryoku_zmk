@@ -2,4 +2,5 @@
 // https://github.com/manna-harbour/miryoku
 
 #define MIRYOKU_ALPHAS_QWERTY
+#define MIRYOKU_MULTI_LAYOUT
 
