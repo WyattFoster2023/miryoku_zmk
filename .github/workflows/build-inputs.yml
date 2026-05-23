@@ -6,14 +6,46 @@ on:
   workflow_dispatch:
     inputs:
       board:
-        description: 'board'
+        description: 'board (e.g. nice_nano, nice_nano_v2)'
         required: true
       shield:
-        description: 'shield'
+        description: 'shield (e.g. lily58_left,lily58_right,settings_reset)'
         required: false
         default: 'default'
       alphas:
         description: 'alphas'
+        required: false
+        default: 'default'
+        type: choice
+        options:
+        - "default"
+        - "AZERTY"
+        - "BEAKL15"
+        - "Colemak"
+        - "ColemakDHK"
+        - "Dvorak"
+        - "Halmak"
+        - "QWERTY"
+        - "QWERTZ"
+        - "Workman"
+      extra:
+        description: 'extra'
+        required: false
+        default: 'default'
+        type: choice
+        options:
+        - "default"
+        - "AZERTY"
+        - "BEAKL15"
+        - "Colemak"
+        - "ColemakDHK"
+        - "Dvorak"
+        - "Halmak"
+        - "QWERTY"
+        - "QWERTZ"
+        - "Workman"
+      tap:
+        description: 'tap'
         required: false
         default: 'default'
         type: choice
@@ -37,6 +69,16 @@ on:
         - "default"
         - "invertedT"
         - "vi"
+      clipboard:
+        description: 'clipboard'
+        required: false
+        default: 'default'
+        type: choice
+        options:
+        - "default"
+        - "fun"
+        - "mac"
+        - "win"
       layers:
         description: 'layers'
         required: false
@@ -46,11 +88,11 @@ on:
         - "default"
         - "flip"
       mapping:
-        description: 'mapping'
+        description: 'mapping (e.g. extended_thumbs; lily58 has a single layout)'
         required: false
         default: 'default'
       custom_config:
-        description: 'custom_config'
+        description: 'custom_config (#define lines, one per line)'
         required: false
         default: 'default'
       kconfig:
@@ -72,7 +114,10 @@ jobs:
       board: ${{ steps.process-inputs.outputs.board }}
       shield: ${{ steps.process-inputs.outputs.shield }}
       alphas: ${{ steps.process-inputs.outputs.alphas }}
+      extra: ${{ steps.process-inputs.outputs.extra }}
+      tap: ${{ steps.process-inputs.outputs.tap }}
       nav: ${{ steps.process-inputs.outputs.nav }}
+      clipboard: ${{ steps.process-inputs.outputs.clipboard }}
       layers: ${{ steps.process-inputs.outputs.layers }}
       mapping: ${{ steps.process-inputs.outputs.mapping }}
       custom_config: ${{ steps.process-inputs.outputs.custom_config }}
@@ -91,7 +136,10 @@ jobs:
           set-output "board" "${{ github.event.inputs.board }}"
           set-output "shield" "${{ github.event.inputs.shield }}"
           set-output "alphas" "${{ github.event.inputs.alphas }}"
+          set-output "extra" "${{ github.event.inputs.extra }}"
+          set-output "tap" "${{ github.event.inputs.tap }}"
           set-output "nav" "${{ github.event.inputs.nav }}"
+          set-output "clipboard" "${{ github.event.inputs.clipboard }}"
           set-output "layers" "${{ github.event.inputs.layers }}"
           set-output "mapping" "${{ github.event.inputs.mapping }}"
           set-output "custom_config" "${{ github.event.inputs.custom_config }}"
@@ -106,7 +154,10 @@ jobs:
       board: ${{ needs.process-inputs.outputs.board }}
       shield: ${{ needs.process-inputs.outputs.shield }}
       alphas: ${{ needs.process-inputs.outputs.alphas }}
+      extra: ${{ needs.process-inputs.outputs.extra }}
+      tap: ${{ needs.process-inputs.outputs.tap }}
       nav: ${{ needs.process-inputs.outputs.nav }}
+      clipboard: ${{ needs.process-inputs.outputs.clipboard }}
       layers: ${{ needs.process-inputs.outputs.layers }}
       mapping: ${{ needs.process-inputs.outputs.mapping }}
       custom_config: ${{ needs.process-inputs.outputs.custom_config }}

@@ -1,4 +1,4 @@
-name: 'Build Personal Silakka54 nice_nano_v2'
+name: 'Build Lily58 nice_nano_v2'
 on: workflow_dispatch
 jobs:
   build:

@@ -19,7 +19,8 @@
 #
 ---
 
+# nice_nano and nice_nano_v2 are in upstream ZMK; pick the board that matches your controller.
 board: [ "nice_nano" ]
 shield: [ "lily58_left", "lily58_right", "settings_reset" ]
+# For nice_nano_v2, use workflow "Build Lily58 nice_nano_v2" or Build Inputs with board nice_nano_v2.
 # Mouse keys: CONFIG_ZMK_POINTING=y is in config/lily58.conf (picked up for lily58_* shields).
-# Miryoku's own workflow injects the same via the kconfig matrix option in .github/workflows/main.yml.
