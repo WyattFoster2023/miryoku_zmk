@@ -138,7 +138,9 @@ build_one() {
       if [[ -n "${SHIELD:-}" ]]; then
         west_args+=(-DSHIELD="${SHIELD}")
       fi
-      west build -b "${BOARD}" -- "${west_args[@]}"
+      # -p: pristine build dir per shield. Without this, lily58_right reuses the
+      # previous lily58_left image and both .uf2 files are identical.
+      west build -p -b "${BOARD}" -- "${west_args[@]}"
       mkdir -p /workdir/artifacts
       for ext in uf2 bin hex elf; do
         f="/workdir/zmk/app/build/zephyr/zmk.${ext}"
@@ -172,6 +174,14 @@ main() {
   for shield in $SHIELDS; do
     build_one "$shield"
   done
+
+  left_uf2="$ARTIFACT_DIR/miryoku_zmk-lily58_left-${BOARD}.uf2"
+  right_uf2="$ARTIFACT_DIR/miryoku_zmk-lily58_right-${BOARD}.uf2"
+  if [[ -f "$left_uf2" && -f "$right_uf2" ]] && cmp -s "$left_uf2" "$right_uf2"; then
+    echo "error: lily58_left and lily58_right .uf2 are identical — split will not work" >&2
+    echo "error: rebuild with a fresh scripts/build-local.sh (uses west build -p per shield)" >&2
+    exit 1
+  fi
 
   echo "Artifacts: $ARTIFACT_DIR"
   ls -la "$ARTIFACT_DIR"

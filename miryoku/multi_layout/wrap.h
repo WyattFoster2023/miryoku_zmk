@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "extended_keys.h"
+
 // 58-key Lily58 matrix order (matches MIRYOKU_LAYOUTMAPPING_LILY58).
 #define MIRYOKU_BIND_LILY58( \
   t40,t41,t42,t43,t44,t45, s49,s50,s51,s52,s53,s54, \
@@ -27,8 +29,8 @@
   a5,a6,a7,a8,a9,a10,a11,a12,a13,a14 \
 ) \
   ML_MIRYOKU_L_TOP, \
-  ML_LAYOUT_SELECT, \
-  &kp F19, a,b,c,d,e,f, g,h,i,j, &kp F22, \
-  &kp F20, k,l,m,n,o,p, q,r,s,t, &kp F23, \
-  &kp F21, u,v,w,x,y,z, a1,a2,a3,a4, &kp F24, \
+  ML_LAYOUT_SELECT_RIGHT, \
+  &none, a,b,c,d,e,f, g,h,i,j, &none, \
+  &none, k,l,m,n,o,p, q,r,s,t, &none, \
+  &none, u,v,w,x,y,z, a1,a2,a3,a4, &none, \
   a5,a6,a7,a8,a9,a10,a11,a12,a13,a14

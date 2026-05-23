@@ -45,7 +45,7 @@ Help: `bash scripts/build-local.sh --help`
 
 1. Ensures `.cache/zmk` exists (clone `zmkfirmware/zmk` at `ZMK_REF` if missing).
 2. Temporarily prepends `#define MIRYOKU_KEYBOARD_<name>` to `miryoku/custom_config.h` (restored after each shield build), same as CI.
-3. Runs `west build` in `zmkfirmware/zmk-build-arm:stable` with `-DZMK_CONFIG=/workdir/miryoku_zmk/config` and `-DSHIELD=...`.
+3. Runs `west build -p` (pristine per shield) in `zmkfirmware/zmk-build-arm:stable` with `-DZMK_CONFIG=/workdir/miryoku_zmk/config` and `-DSHIELD=...`.
 4. Cleans `firmware/` (keeps `README.md`), then copies `zmk.uf2` (or `.bin`/`.hex`) there.
 
 Flash built firmware: `./flash` (pick mount + `.uf2` via `fzf`). CI zips dropped in `firmware/` are extracted on demand.
