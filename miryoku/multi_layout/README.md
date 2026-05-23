@@ -11,7 +11,7 @@ Right-half top row, left to right:
 |-----|---------|
 | K49 | Miryoku (`&to` Base layer) |
 | K50 | Game HID |
-| K51 | Empty (slot 3) |
+| K51 | Slot 3 (blank profile) |
 
 These bindings are duplicated on every layer so you can switch profiles from any Miryoku layer or from Game/Empty.
 
@@ -54,7 +54,7 @@ Game mode uses standard `&kp` (activate on press, release on key up). Miryoku st
 
 ### QWERTY-only wrap
 
-`MIRYOKU_WRAP_MIRYOKU` is wired for `MIRYOKU_ALPHAS_QWERTY` (non-flip). Enabling `MIRYOKU_LAYERS_FLIP` or other alpha layouts requires matching wrap definitions in `layer_selection.h`.
+Miryoku layers (Base–Fun) are pre-expanded in `wrapped_layers.h`. After changing `miryoku_babel/miryoku_layer_alternatives.h` or `wrap.h`, run `python3 scripts/gen-wrapped-layers.py`. `MIRYOKU_WRAP_MIRYOKU` in `wrap.h` is wired for `MIRYOKU_ALPHAS_QWERTY` (non-flip).
 
 ### Thumb combos
 

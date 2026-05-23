@@ -15,11 +15,11 @@
 
 #define ML_SEL_MIRYOKU &to U_BASE
 #define ML_SEL_GAME    &to U_GAME
-#define ML_SEL_EMPTY   &to U_EMPTY
+#define ML_SEL_SLOT3   &to U_SLOT3
 
 // Layout selector row (right half top row, left to right).
 #define ML_LAYOUT_SELECT \
-  ML_SEL_MIRYOKU, ML_SEL_GAME, ML_SEL_EMPTY, U_NA, U_NA, U_NA
+  ML_SEL_MIRYOKU, ML_SEL_GAME, ML_SEL_SLOT3, U_NA, U_NA, U_NA
 
 // Obscure HID keys for unused L-keys in miryoku (remap in software).
 #define ML_MIRYOKU_L_TOP \

@@ -16,7 +16,7 @@ MIRYOKU_X(NUM,    "Num") \
 MIRYOKU_X(SYM,    "Sym") \
 MIRYOKU_X(FUN,    "Fun") \
 MIRYOKU_X(GAME,   "Game") \
-MIRYOKU_X(EMPTY,  "Empty")
+MIRYOKU_X(SLOT3,  "Empty")
 
 #define U_BASE   0
 #define U_EXTRA  1
@@ -29,6 +29,6 @@ MIRYOKU_X(EMPTY,  "Empty")
 #define U_SYM    8
 #define U_FUN    9
 #define U_GAME   10
-#define U_EMPTY  11
+#define U_SLOT3  11
 
 #endif

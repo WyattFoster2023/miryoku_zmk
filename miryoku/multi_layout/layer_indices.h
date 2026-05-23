@@ -3,4 +3,4 @@
 #pragma once
 
 #define U_GAME  10
-#define U_EMPTY 11
+#define U_SLOT3 11

@@ -1,1 +1,5 @@
-firmware/.extracted/
+# Built firmware and CI artifact drops (see firmware/README.md)
+firmware/*
+!firmware/README.md
+
+.zmk/

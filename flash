@@ -23,13 +23,13 @@ Flash a .uf2 firmware file to a keyboard in UF2 bootloader mode.
 Options:
   --all-mounts     Show every mount under $MEDIA_ROOT (default: bootloader volumes only)
   --device PATH    Skip mount selection (must be under $MEDIA_ROOT)
-  --zip PATH       Skip zip selection
-  --uf2 PATH       Skip .uf2 selection (requires --zip or existing extract cache)
+  --zip PATH       Use this GitHub Actions artifact zip (extracts under firmware/.extracted/)
+  --uf2 PATH       Skip firmware selection
   -h, --help       Show this help
 
 Workflow:
   1. Double-tap reset so the board appears as a USB drive (e.g. NICENANO).
-  2. Place GitHub Actions artifact zips in firmware/
+  2. Build with scripts/build-local.sh (writes .uf2 into firmware/) or drop a CI zip there.
   3. Run ./flash from the repository root
 EOF
 }
@@ -129,7 +129,7 @@ pick_zip() {
   shopt -u nullglob
 
   if [[ ${#zips[@]} -eq 0 ]]; then
-    die "no zip files in $FIRMWARE_DIR — save a GitHub Actions artifact zip there"
+    die "no .uf2 or .zip files in $FIRMWARE_DIR — run scripts/build-local.sh or drop a CI artifact zip there"
   fi
 
   choice="$(
@@ -159,8 +159,14 @@ extract_zip() {
   EXTRACT_DIR="$cache_dir"
 }
 
+discover_uf2_files() {
+  [[ -d "$FIRMWARE_DIR" ]] || return 0
+  find "$FIRMWARE_DIR" -name '*.uf2' -type f 2>/dev/null | sort -u
+}
+
 pick_uf2() {
-  local uf2s choice rel
+  local search_root="${1:-}"
+  local uf2s choice rel label display_root
 
   if [[ -n "$UF2" ]]; then
     [[ -f "$UF2" ]] || die "uf2 not found: $UF2"
@@ -168,11 +174,24 @@ pick_uf2() {
     return
   fi
 
-  [[ -n "${EXTRACT_DIR:-}" ]] || die "internal error: extract dir not set"
+  if [[ -n "$search_root" ]]; then
+    mapfile -t uf2s < <(find "$search_root" -name '*.uf2' -type f 2>/dev/null | sort)
+    display_root="$search_root"
+  else
+    mapfile -t uf2s < <(discover_uf2_files)
+    display_root="$FIRMWARE_DIR"
+  fi
 
-  mapfile -t uf2s < <(find "$EXTRACT_DIR" -name '*.uf2' -type f | sort)
-  if [[ ${#uf2s[@]} -eq 0 ]]; then
-    die "no .uf2 files in $EXTRACT_DIR (check zip contents)"
+  if [[ ${#uf2s[@]} -eq 0 && -z "$search_root" ]]; then
+    pick_zip
+    extract_zip
+    mapfile -t uf2s < <(find "$EXTRACT_DIR" -name '*.uf2' -type f | sort)
+    display_root="$EXTRACT_DIR"
+    if [[ ${#uf2s[@]} -eq 0 ]]; then
+      die "no .uf2 files under $EXTRACT_DIR (check zip contents)"
+    fi
+  elif [[ ${#uf2s[@]} -eq 0 ]]; then
+    die "no .uf2 files under $search_root"
   fi
 
   if [[ ${#uf2s[@]} -eq 1 ]]; then
@@ -183,8 +202,10 @@ pick_uf2() {
 
   choice="$(
     for f in "${uf2s[@]}"; do
-      rel="${f#"$EXTRACT_DIR"/}"
-      printf '%s\t%s\n' "$rel" "$f"
+      rel="${f#"$display_root"/}"
+      [[ "$rel" == "$f" ]] && rel="$(basename "$f")"
+      label="$(basename "$f")"
+      printf '%s\t%s\n' "$label ($rel)" "$f"
     done | fzf \
       --prompt 'UF2 file> ' \
       --with-nth=1 \
@@ -220,9 +241,9 @@ split_reminder() {
   local base
 
   base="$(basename "$UF2")"
-  if [[ "$base" == *left* || "$ZIP" == *left* ]]; then
+  if [[ "$base" == *left* || "${ZIP:-}" == *left* ]]; then
     echo "flash: split keyboard — flash the right half with the matching *_right* build when ready."
-  elif [[ "$base" == *right* || "$ZIP" == *right* ]]; then
+  elif [[ "$base" == *right* || "${ZIP:-}" == *right* ]]; then
     echo "flash: split keyboard — flash the left half with the matching *_left* build when ready."
   fi
 }
@@ -237,9 +258,14 @@ main() {
   need_cmd realpath
 
   pick_mount
-  pick_zip
-  extract_zip
-  pick_uf2
+
+  if [[ -n "$ZIP" && -z "$UF2" ]]; then
+    extract_zip
+    pick_uf2 "$EXTRACT_DIR"
+  else
+    pick_uf2
+  fi
+
   confirm_flash
   flash_uf2
   split_reminder
