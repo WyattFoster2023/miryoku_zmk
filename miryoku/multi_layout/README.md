@@ -28,6 +28,8 @@ See [SPLIT_DIAGNOSTICS.md](SPLIT_DIAGNOSTICS.md) for split pairing and **K54** c
 | K54 | Split diagnostic digit per layer (see SPLIT_DIAGNOSTICS.md) |
 | K55–K57 | Unassigned (`&none`, right outer column) |
 
+The bottom alpha row includes **N38/N39** (inner keys between K24 and K25), matching the kata0510 Lily58 matrix and the `XXX` gaps in the stock Lily58 diagram.
+
 ## Game HID layout
 
 Left top row **K40–K42**: ESC, `1`, `2`. Selectors on **K43–K45** (same as Miryoku).
@@ -62,7 +64,7 @@ Miryoku layers (Base–Fun) are pre-expanded in `wrapped_layers.h`. After changi
 
 ### Thumb combos
 
-Combo key-position indices were updated for the extended matrix (51/52 left, 56/57 right). If combos behave oddly, re-verify positions against your physical PCB.
+Combo key-position indices were updated for the extended matrix (53/54 left, 56/57 right). If combos behave oddly, re-verify positions against your physical PCB.
 
 ### Empty slot
 

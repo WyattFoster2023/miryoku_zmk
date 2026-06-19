@@ -21,9 +21,9 @@
   &none, &none, &none, &none, &none, &none, \
   &kp K, &kp A, &kp S, &kp D, &kp F, &kp G, \
   &none, &none, &none, &none, &none, &none, \
-  &kp M, &kp Z, &kp X, &kp C, &kp V, &kp B, \
+  &kp M, &kp Z, &kp X, &kp C, &kp V, &kp B, &none, &none, \
   &none, &none, &none, &none, &none, &none, \
-  U_NP, U_NP, &kp LCTRL, &kp LALT, &kp SPACE, &none, &none, &none, U_NP, U_NP
+  U_NP, U_NP, &kp LCTRL, &kp LALT, &kp SPACE, &none, &none, &none
 
 #define MIRYOKU_LAYER_SLOT3 \
   &none, &none, &none, ML_SEL_MIRYOKU, ML_SEL_GAME, ML_SEL_SLOT3, \
@@ -32,9 +32,9 @@
   &none, &none, &none, &none, &none, &none, \
   U_NA, U_NA, U_NA, U_NA, U_NA, U_NA, \
   &none, &none, &none, &none, &none, &none, \
-  U_NA, U_NA, U_NA, U_NA, U_NA, U_NA, \
+  U_NA, U_NA, U_NA, U_NA, U_NA, U_NA, U_NA, U_NA, \
   &none, &none, &none, &none, &none, &none, \
-  U_NP, U_NP, U_NA, U_NA, U_NA, &none, &none, &none, U_NP, U_NP
+  U_NP, U_NP, U_NA, U_NA, U_NA, &none, &none, &none
 
 #define MIRYOKU_LAYERMAPPING_GAME  MIRYOKU_MAPPING
 #define MIRYOKU_LAYERMAPPING_SLOT3 MIRYOKU_MAPPING

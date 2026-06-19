@@ -24,12 +24,12 @@ SLOT_NAMES = (
     + ["r56"]
     + ["l48"]
     + [f"a2{i}" for i in range(5)]
+    + ["n38", "n39"]
     + [f"a2{i}" for i in range(5, 10)]
     + ["r57"]
     + ["n30", "n31"]
     + [f"k3{i}" for i in range(2, 5)]
     + [f"k3{i}" for i in range(5, 8)]
-    + ["n38", "n39"]
 )
 
 PHYS = {
@@ -97,6 +97,14 @@ def main() -> int:
             for key in ("s449", "s450", "s451", "s452", "s453"):
                 if slot(bindings, key) != "&none":
                     errors.append(f"{name}: {key} should be &none")
+            if slot(bindings, "a14") != "&kp D":
+                errors.append(f"{name}: K14 (a14) should be Colemak &kp D")
+            if slot(bindings, "a23") != "&kp V":
+                errors.append(f"{name}: K23 (a23) should be Colemak &kp V")
+            if slot(bindings, "a15") != "&kp H":
+                errors.append(f"{name}: K15 (a15) should be Colemak &kp H")
+            if slot(bindings, "a26") != "&kp M":
+                errors.append(f"{name}: K26 (a26) should be Colemak &kp M")
         if name == "GAME":
             if slot(bindings, "t440") != "&kp ESC":
                 errors.append(f"{name}: K40 should be &kp ESC")
@@ -109,6 +117,10 @@ def main() -> int:
                     errors.append(f"{name}: {PHYS[key]} should be a profile selector")
             if not slot(bindings, "l46").startswith("&kp "):
                 errors.append(f"{name}: K46 should start the game grid (&kp)")
+            if slot(bindings, "a14") != "&kp G":
+                errors.append(f"{name}: K14 should be &kp G")
+            if slot(bindings, "a23") != "&kp V":
+                errors.append(f"{name}: K23 should be &kp V (QWERTY game bottom row)")
 
     if errors:
         for e in errors:

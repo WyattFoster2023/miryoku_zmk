@@ -147,9 +147,11 @@ def wrap_miryoku(alts: list[str], layer_index: int) -> list[str]:
         *alts[10:20],
         "&none",
         "&none",
-        *alts[20:30],
+        *alts[20:25],
+        *alts[38:40],
+        *alts[25:30],
         "&none",
-        *alts[30:40],
+        *alts[30:38],
     ]
     bindings[K54_BIND_INDEX] = K54_DIAG[layer_index]
     return bindings
